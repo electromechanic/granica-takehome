@@ -13,6 +13,8 @@ This platform is built using EKS, S3 and RDS for the AWS resource. For the data 
 
 I'll walk through the build process step by step. It is assumed that all commands are run from the root of the repo unless specified otherwise. You will need aws access with the ability to deploy buckets, kms keys, iam roles, role policies, eks clusters, and rds clusters. I ran this using Kubuntu 24.04, you may need to make adjustment if you're using OSX, Windows or another Linux flavor. I'm going to use basic port forwarding to demonstrate this.
 
+---
+
 To get started go to the terraform resources directory, update the values to your needs and apply the config
 
 ```
@@ -26,7 +28,7 @@ For the EKS cluster, i have a custom tool that i built that runs in a job pod an
 
 Once the cluster is up, add it to your kubeconfig
 
-aws eks update-kubeconfig --region us-east-1 --name granica-platform
+`aws eks update-kubeconfig --region us-east-1 --name granica-platform`
 
 Create the data-platform namespace, aws key secret, and database credentials secret
 
@@ -34,14 +36,14 @@ Create the data-platform namespace, aws key secret, and database credentials sec
 kubectl create namespace data-platform
 
 kubectl create secret generic aws-keys
---namespace data-platform
---from-literal=aws_access_key=<"your access key key">
---from-literal=aws_secret_key=<"your secret key">
+    --namespace data-platform
+    --from-literal=aws_access_key=<"your access key key">
+    --from-literal=aws_secret_key=<"your secret key">
 
 kubectl create secret generic nessie-db-creds
---namespace data-platform
---from-literal=username=master
---from-literal=password=<"your password">
+    --namespace data-platform
+    --from-literal=username=master
+    --from-literal=password=<"your password">
 ```
 
 Deploy Nessie data catalog and port forward to the web ui
@@ -66,11 +68,11 @@ docker build -t <'aws account number'>.dkr.ecr.us-east-1.amazonaws.com/granica-s
 docker push <'aws account number'>.dkr.ecr.us-east-1.amazonaws.com/granica-spark:3.5.2-iceberg-v2
 ```
 
-Deploy the Spark operator
-note: You will need to clone down the operator repo and you'll
+Deploy the Spark operator<br>
+*note: You will need to clone down the operator repo and you'll
 also need to use java17 to generate the CRDs, dependencies are
 jdk17, jre17, and th mikefarah build of yq
-https://github.com/mikefarah/yq?tab=readme-ov-file#install
+[https://github.com/mikefarah/yq?tab=readme-ov-file#install](https://https://github.com/mikefarah/yq?tab=readme-ov-file#install)*
 
 Clone this outside of the dataplatform repo and cd in to the root of the spark-kubernetes-operator repo
 
@@ -97,9 +99,8 @@ kubectl port-forward pods/granica-spark-cluster-master-0 8080:8080 -n data-platf
 port-forward services/spark-connect-server 15002:15002 -n data-platform
 ```
 
-Now we can run Spark jobs from the desktop, I'm going to use pyspark to demonstrate.
-note: you'll need to create an pyenv using your tool of choice and install the dependencies, I'm using miniconda
-You wil also need to verify your AWS access key and secret key are present in your environment vars
+Now we can run Spark jobs from the desktop, I'm going to use pyspark to demonstrate.<br>
+*note: you'll need to create an pyenv using your tool of choice and install the dependencies, I'm using miniconda You wil also need to verify your AWS access key and secret key are present in your environment vars*
 
 ```
 conda create -n pyspark
@@ -201,4 +202,4 @@ SELECT
 """).show()
 ```
 
-# TODO: set up metrics, and store outputs in other tables, design diagram and scaling estimates
+*#### TODO: set up metrics, and store outputs in other tables, design diagram and scaling estimates*
