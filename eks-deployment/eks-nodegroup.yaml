@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-create-nodegroup-job
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: eks-manager
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: eks-manager
+          image: eks-manager:v2
+          imagePullPolicy: IfNotPresent
+          command: ["eks", "-s", "mongo", "nodegroup", "create"]
+          env:
+            - name: EKS_CLUSTER_NAME
+              value: "granica-platform"
+            - name: EKS_NODEGROUP_NAME
+              value: "compute-nodes"
+            - name: EKS_NODEGROUP_SUBNETS
+              value: "private" 
+            - name: EKS_NODEGROUP_INSTANCE_TYPES
+              value: "m8g.medium"  
+            - name: EKS_NODEGROUP_AMI_TYPE
+              value: "AL2_ARM_64" 
+            - name: EKS_NODEGROUP_CAPACITY_TYPE
+              value: "SPOT" 
+            - name: EKS_KUBERNETES_VERSION
+              value: "1.32" 
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-uri
+                  key: mongo_uri
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1" 
+

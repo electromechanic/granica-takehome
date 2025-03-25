@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-create-cluster-job
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: eks-manager
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: eks-manager
+          image: eks-manager:v2
+          imagePullPolicy: IfNotPresent
+          command: ["eks", "-s", "mongo", "cluster", "create"]
+          env:
+            - name: EKS_CLUSTER_NAME
+              value: "granica-platform"
+            - name: EKS_CLUSTER_VERSION
+              value: '1.32'
+            - name: EKS_VPC_NAME
+              value: "lab-dev-us-east-1-vpc"
+            - name: EKS_REGION
+              value: "us-east-1" 
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-uri
+                  key: mongo_uri
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1" 

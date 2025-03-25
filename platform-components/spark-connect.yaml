@@ -1,0 +1,88 @@
+apiVersion: spark.apache.org/v1alpha1
+kind: SparkApplication
+metadata:
+  name: spark-connect-server
+  namespace: data-platform
+spec:
+  mainClass: "org.apache.spark.sql.connect.service.SparkConnectServer"
+  runtimeVersions:
+      sparkVersion: "3.5.2"
+  sparkConf:
+    spark.master: "spark://granica-spark-cluster-master-svc:7077"
+    spark.submit.deployMode: "cluster"
+    spark.executor.cores: "1"
+    spark.cores.max: "3"
+
+    spark.kubernetes.authenticate.driver.serviceAccountName: "spark"
+    spark.kubernetes.container.image: "290730444397.dkr.ecr.us-east-1.amazonaws.com/granica-spark:3.5.2-iceberg-v4"
+  
+    spark.driver.userClassPathFirst: "true"
+    spark.executor.userClassPathFirst: "true"
+    spark.jars.excludes: "org.slf4j:slf4j-api"
+    # spark.jars.packages: "org.apache.spark:spark-connect_2.12:3.5.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.0,org.projectnessie:nessie-spark-extensions-3.5_2.12:0.103.2,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.539"
+    # spark.jars.repositories: "https://repo.maven.apache.org/maven2"
+    spark.jars.ivy: "/tmp/.ivy2"
+
+    spark.connect.grpc.binding.port: "15002"
+    spark.connect.grpc.binding.host: "0.0.0.0"
+
+    # Iceberg + Nessie catalog setup
+    spark.sql.extensions: org.projectnessie.spark.extensions.NessieSparkSessionExtensions
+    spark.sql.catalog.granica: org.projectnessie.spark.extensions.NessieCatalog
+    spark.sql.catalog.granica.catalog-impl: "org.apache.iceberg.nessie.NessieCatalog"
+    spark.sql.catalog.granica.uri: "http://nessie-catalog.data-platform.svc.cluster.local:19120/api/v1"
+    spark.sql.catalog.granica.warehouse: "s3a://granica-us-east-1-data-lake/iceberg/"
+    spark.sql.catalog.granica.s3.endpoint: "https://s3.us-east-1.amazonaws.com"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.aws.credentials.provider: org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+    spark.ui.reverseProxy: "true"
+  
+  driverSpec:
+    podTemplateSpec:
+      metadata:
+        annotations:
+          sparkoperator.k8s.io/driver-port: "15002"
+      spec:
+        serviceAccountName: spark
+        containers:
+          - name: spark-kubernetes-driver
+            ports:
+              - containerPort: 15002
+                name: grpc
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "500m"
+              limits:
+                memory: "1Gi"
+                cpu: "1"
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-keys
+                    key: aws_access_key
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-keys
+                    key: aws_secret_key
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-connect-server
+  namespace: data-platform
+spec:
+  type: ClusterIP
+  selector:
+    spark-role: driver
+    spark-app-selector: spark-connect-server-0
+  ports:
+    - name: grpc
+      port: 15002
+      targetPort: 15002
+

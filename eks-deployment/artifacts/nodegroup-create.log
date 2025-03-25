@@ -1,0 +1,11 @@
+2025-03-21 01:31:30 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-21 01:31:30 [eks.manager.aws] [INFO] Role 'granica-platform-node-role' already exists.
+2025-03-21 01:31:31 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-21 01:31:31 [eks.manager.aws] [INFO] Creating Nodegroup...
+2025-03-21 01:31:32 [eks.manager.aws] [INFO] Waiting for Nodegroup 'compute-nodes' to become active...
+2025-03-21 01:31:32 [eks.manager.aws] [INFO] Nodegroup 'compute-nodes' is in status 'CREATING'... Elapsed time: 0 seconds.
+2025-03-21 01:32:02 [eks.manager.aws] [INFO] Nodegroup 'compute-nodes' is in status 'CREATING'... Elapsed time: 30 seconds.
+2025-03-21 01:32:33 [eks.manager.aws] [INFO] Nodegroup 'compute-nodes' is in status 'CREATING'... Elapsed time: 60 seconds.
+2025-03-21 01:33:03 [eks.manager.aws] [INFO] Nodegroup 'compute-nodes' is in status 'CREATING'... Elapsed time: 90 seconds.
+2025-03-21 01:33:33 [eks.manager.aws] [INFO] Nodegroup 'compute-nodes' is now active! Total time: 120 seconds.
+2025-03-21 01:33:33 [eks.manager.utils] [INFO] State saved in MongoDB: default.aws/granica-platform

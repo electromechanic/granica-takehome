@@ -1,0 +1,61 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/projectnessie/nessie
+  pullPolicy: IfNotPresent
+
+versionStoreType: JDBC2
+
+jdbc:
+  jdbcUrl: jdbc:postgresql://granica-aurora.cluster-cjy8a0606ots.us-east-1.rds.amazonaws.com:5432/granica
+  secret:
+    name: nessie-db-creds
+    username: username
+    password: password
+
+catalog:
+  enabled: true
+  iceberg:
+    defaultWarehouse: iceberg
+    warehouses:
+      - name: iceberg
+        location: s3://granica-us-east-1-data-lake/iceberg/
+  storage:
+    s3:
+      defaultOptions:
+        region: us-east-1
+        accessKeySecret:
+          name: aws-keys
+          awsAccessKeyId: aws_access_key
+          awsSecretAccessKey: aws_secret_key
+      buckets:
+        - name: granica-us-east-1-data-lake
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 500m
+  limits:
+    memory: 1024Mi
+    cpu: 1000m
+
+service:
+  type: ClusterIP
+  port: 19120
+
+ingress:
+  enabled: false
+
+extraEnv:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: aws-keys
+        key: aws_access_key
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: aws-keys
+        key: aws_secret_key
+  - name: AWS_REGION
+    value: us-east-1

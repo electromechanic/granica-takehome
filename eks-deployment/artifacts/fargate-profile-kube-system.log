@@ -1,0 +1,10 @@
+2025-03-24 03:28:55 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-24 03:28:55 [eks.manager.aws] [INFO] Fargate Pod Execution Role 'granica-platform-fargate-pod-execution-role' created successfully.
+2025-03-24 03:29:02 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-24 03:29:03 [eks.manager.aws] [INFO] Creating Fargate profile...
+2025-03-24 03:29:04 [eks.manager.aws] [INFO] Waiting for Fargate profile 'kube-system' to become active...
+2025-03-24 03:29:04 [eks.manager.aws] [INFO] Fargate profile 'kube-system' is in status 'CREATING'... Elapsed time: 0 seconds.
+2025-03-24 03:29:34 [eks.manager.aws] [INFO] Fargate profile 'kube-system' is in status 'CREATING'... Elapsed time: 30 seconds.
+2025-03-24 03:30:05 [eks.manager.aws] [INFO] Fargate profile 'kube-system' is in status 'CREATING'... Elapsed time: 60 seconds.
+2025-03-24 03:30:35 [eks.manager.aws] [INFO] Fargate profile 'kube-system' is now active! Total time: 90 seconds.
+2025-03-24 03:30:35 [eks.manager.utils] [INFO] State saved in MongoDB: default.aws/granica-platform

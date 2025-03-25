@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-create-fargate-profile-job-kube-system
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: eks-manager
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: eks-manager
+          image: eks-manager:v2
+          command: ["eks", "-s", "mongo", "fargateprofile", "create"]
+          env:
+            - name: EKS_CLUSTER_NAME
+              value: "granica-platform"
+            - name: EKS_FARGATEPROFILE_NAME
+              value: "kube-system"
+            - name: EKS_FARGATEPROFILE_NAMESPACE
+              value: "kube-system"
+            - name: EKS_REGION
+              value: "us-east-1" 
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-uri
+                  key: mongo_uri
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1" 

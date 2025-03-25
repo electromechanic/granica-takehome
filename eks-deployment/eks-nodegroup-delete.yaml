@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-delete-nodegroup-job
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: eks-manager
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: eks-manager
+          image: eks-manager:v2
+          imagePullPolicy: IfNotPresent
+          command: ["eks", "-s", "mongo", "nodegroup", "delete"]
+          env:
+            - name: EKS_CLUSTER_NAME
+              value: "granica-platform"
+            - name: EKS_NODEGROUP_NAME
+              value: "compute-nodes"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-uri
+                  key: mongo_uri
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1" 

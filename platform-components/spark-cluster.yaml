@@ -1,0 +1,113 @@
+apiVersion: spark.apache.org/v1alpha1
+kind: SparkCluster
+metadata:
+  name: granica-spark-cluster
+  namespace: data-platform
+spec:
+  runtimeVersions:
+    sparkVersion: "3.5.2"
+  clusterTolerations:
+    instanceConfig:
+      initWorkers: 3
+      minWorkers: 3
+      maxWorkers: 3
+  sparkConf:
+    spark.kubernetes.container.image: "290730444397.dkr.ecr.us-east-1.amazonaws.com/granica-spark:3.5.2-iceberg-v4"
+    spark.master.ui.title: "Granica Spark Cluster"
+    spark.master.rest.enabled: "true"
+    spark.master.rest.host: "0.0.0.0"
+    spark.ui.reverseProxy: "true"
+
+    spark.sql.extensions: org.projectnessie.spark.extensions.NessieSparkSessionExtensions
+    spark.sql.catalog.granica: org.projectnessie.spark.extensions.NessieCatalog
+    spark.sql.catalog.granica.catalog-impl: org.apache.iceberg.nessie.NessieCatalog
+    spark.sql.catalog.granica.uri: http://nessie-catalog.data-platform.svc.cluster.local:19120/api/v1
+    spark.sql.catalog.granica.warehouse: s3a://granica-us-east-1-data-lake/iceberg/
+    spark.sql.catalog.granica.io-impl: org.apache.iceberg.aws.s3.S3FileIO
+    spark.sql.catalog.granica.s3.region: us-east-1
+    spark.hadoop.fs.s3a.aws.credentials.provider: org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+    spark.hadoop.fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+    spark.hadoop.fs.s3a.path.style.access: "true"
+
+    spark.driver.userClassPathFirst: "true"
+    spark.executor.userClassPathFirst: "true"
+
+    # spark.jars: "s3a://granica-us-east-1-data-lake/spark-jars/spark-connect_2.12-3.5.2.jar,s3a://granica-us-east-1-data-lake/spark-jars/iceberg-spark-runtime-3.5_2.12-1.8.0.jar,s3a://granica-us-east-1-data-lake/spark-jars/nessie-spark-extensions-3.1_2.12-0.71.1.jar,s3a://granica-us-east-1-data-lake/spark-jars/hadoop-aws-3.3.4.jar,s3a://granica-us-east-1-data-lake/spark-jars/aws-java-sdk-bundle-1.12.539.jar"
+
+
+  masterSpec:
+    statefulSetSpec:
+      template:
+        spec:
+          containers:
+            - name: master
+              ports:
+                - name: grpc
+                  containerPort: 15002
+              resources:
+                requests:
+                  cpu: "1"
+                  memory: "2Gi"
+                limits:
+                  cpu: "1"
+                  memory: "2Gi"
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-keys
+                      key: aws_access_key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-keys
+                      key: aws_secret_key
+
+  workerSpec:
+    statefulSetSpec:
+      template:
+        spec:
+          containers:
+            - name: worker
+              resources:
+                requests:
+                  cpu: "1"
+                  memory: "2Gi"
+                limits:
+                  cpu: "2"
+                  memory: "4Gi"
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-keys
+                      key: aws_access_key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-keys
+                      key: aws_secret_key
+
+
+# skipping hpa for now
+    # horizontalPodAutoscalerSpec:
+    #   metrics:
+    #     - type: ContainerResource
+    #       containerResource:
+    #         name: cpu
+    #         container: worker
+    #         target:
+    #           type: Utilization
+    #           averageUtilization: 60
+    #   behavior:
+    #     scaleUp:
+    #       policies:
+    #         - type: Pods
+    #           value: 1
+    #           periodSeconds: 30
+    #     scaleDown:
+    #       policies:
+    #         - type: Pods
+    #           value: 1
+    #           periodSeconds: 300
+

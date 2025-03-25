@@ -1,0 +1,8 @@
+2025-03-24 03:30:48 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-24 03:30:48 [eks.manager.aws] [INFO] Role 'granica-platform-fargate-pod-execution-role' already exists.
+2025-03-24 03:30:55 [botocore.credentials] [INFO] Found credentials in environment variables.
+2025-03-24 03:30:56 [eks.manager.aws] [INFO] Creating Fargate profile...
+2025-03-24 03:30:57 [eks.manager.aws] [INFO] Waiting for Fargate profile 'data-platform' to become active...
+2025-03-24 03:30:57 [eks.manager.aws] [INFO] Fargate profile 'data-platform' is in status 'CREATING'... Elapsed time: 0 seconds.
+2025-03-24 03:31:27 [eks.manager.aws] [INFO] Fargate profile 'data-platform' is now active! Total time: 30 seconds.
+2025-03-24 03:31:27 [eks.manager.utils] [INFO] State saved in MongoDB: default.aws/granica-platform
